@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      body {
+        margin: 0;
+        background: rgb(236, 189, 189);
+      }
+      .container {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        width: 700px;
+        background: white;
+        padding: 40px;
+        border-radius: 40px;
+        margin: 60px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+      }
+      button {
+        font-size: 15px;
+        color: beige;
+        padding: 15px 20px;
+        border-radius: 5px;
+        border: none;
+        background: green;
+        cursor: pointer;
+        transition: all 0.25s ease;
+      }
+
+      button:hover {
+        background: #0f7f0f;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.25);
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Hello firebase</h1>
+        <div class="boxbtn">
+          <button id="set-btn">เพิ่มข้อมูล(set)</button>
+          <button id="create-btn">เพิ่มข้อมูล(create)</button>
+          <button id="read-btn">แสดงข้อมูล</button>
+          <button id="update-btn">แก้ไขข้อมูล</button>
+          <button id="delete-btn">ลบข้อมูล</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        doc,
+        setDoc,
+        addDoc,
+        serverTimestamp,
+        getDocs,
+        deleteDoc,
+        onSnapshot,
+      } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyAhKMt2-wTBqCUCC4mzHjt8tWxCHBJXC5I",
+        authDomain: "student-data-app-1c677.firebaseapp.com",
+        projectId: "student-data-app-1c677",
+        storageBucket: "student-data-app-1c677.firebasestorage.app",
+        messagingSenderId: "575305259038",
+        appId: "1:575305259038:web:2ed2df837feb093185f60f",
+      };
+
+      import { getAuth, signInAnonymously, onAuthStateChanged  } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+      
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth();
+
+
+      const initApp = async()=>{
+        try {
+          signInAnonymously(auth)
+          console.log("Signed in anonymously");
+          
+        } catch (error) {
+          console.log(error)
+        }
+      }
+
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          console.log("user > ",user)
+          readUser();
+        }
+      });
+
+
+      const setUser = async () => {
+        try {
+          const dataUser = {
+            name: "peter",
+            age: 20,
+          };
+          const docRef = doc(db, "user", "1235");
+          await setDoc(
+            docRef,
+            {
+              ...dataUser,
+              // ใช้ serverTimestamp()
+              createdAt: serverTimestamp(),
+            },
+            { merge: true }
+          );
+          console.log("set Success ", docRef.id);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      const createUser = async () => {
+        try {
+          const dataUser = {
+            name: "jhon doe",
+            age: 25,
+          };
+          const userRef = collection(db, "user");
+          const docRef = await addDoc(userRef, {
+            ...dataUser,
+            // ใช้ serverTimestamp()
+            createdAt: serverTimestamp(),
+          });
+          console.log("create Success ", docRef.id);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      const readUser = async () => {
+        try {
+          const userRef = collection(db, "user");
+          const snapUser = await getDocs(userRef);
+          const userData = snapUser.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
+          console.log(userData);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      const deleteUser = async () => {
+        try {
+          const idTodelete = "sN7pxdx9qy2gziRPEace";
+          const docRef = doc(db, "user", idTodelete);
+          await deleteDoc(docRef);
+          console.log("user delete Success... :", docRef.id);
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      const realTimeData = () => {
+        const userRef = collection(db, "user");
+        const unsubscribe = onSnapshot(
+          userRef,
+          (snap) => {
+            snap.docChanges().forEach((change) => {
+              if (change.type === "added") {
+                console.log("New User (Added): ", change.doc.data());
+              }
+              // เพิ่มส่วนนี้เพื่อดักจับ setUser เมื่อข้อมูลมีอยู่แล้ว
+              else if (change.type === "modified") {
+                console.log("Updated User (Modified): ", change.doc.data());
+              } else if (change.type === "removed") {
+                console.log("Deleted User: ", change.doc.id);
+              }
+            });
+          },
+          (error) => console.log(error)
+        );
+      };
+
+      realTimeData();
+
+      const buttonSet = document.getElementById("set-btn");
+      buttonSet.addEventListener("click", setUser);
+
+      const buttonCreate = document.getElementById("create-btn");
+      buttonCreate.addEventListener("click", createUser);
+
+      const buttonRead = document.getElementById("read-btn");
+      buttonRead.addEventListener("click", readUser);
+
+      const buttonDelete = document.getElementById("delete-btn");
+      buttonDelete.addEventListener("click", deleteUser);
+    </script>
+  </body>
+</html>

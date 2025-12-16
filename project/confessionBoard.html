@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>กำแพงระบายความในใจ (Login Mode) 🤫</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Mali:wght@300;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      body {
+        font-family: "Mali", cursive;
+      }
+
+      @keyframes popIn {
+        0% {
+          transform: scale(0.5) rotate(0deg);
+          opacity: 0;
+        }
+        80% {
+          transform: scale(1.1) rotate(5deg);
+          opacity: 1;
+        }
+        100% {
+          transform: scale(1) rotate(var(--rotation));
+          opacity: 1;
+        }
+      }
+
+      .note-enter {
+        animation: popIn 0.5s ease-out forwards;
+      }
+      .hide-scroll::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scroll {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-800 min-h-screen text-gray-800 relative overflow-x-hidden"
+  >
+    <div
+      class="fixed inset-0 opacity-10 pointer-events-none"
+      style="
+        background-image: radial-gradient(#ffffff 2px, transparent 2px);
+        background-size: 30px 30px;
+      "
+    ></div>
+
+    <!-- === LOGIN SCREEN (แสดงเมื่อยังไม่ล็อกอิน) === -->
+    <div
+      id="loginScreen"
+      class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-900/95 backdrop-blur-sm transition-opacity duration-500"
+    >
+      <h1 class="text-5xl font-bold text-white mb-8 drop-shadow-lg">
+        🔒 กรุณาล็อกอิน
+      </h1>
+      <button
+        onclick="signInWithGoogle()"
+        class="bg-white hover:bg-gray-100 text-gray-800 font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition flex items-center gap-3 text-xl"
+      >
+        <img
+          src="https://www.svgrepo.com/show/475656/google-color.svg"
+          class="w-8 h-8"
+          alt="Google Logo"
+        />
+        เข้าสู่ระบบด้วย Google
+      </button>
+      <p class="text-gray-400 mt-4">ต้องล็อกอินก่อนถึงจะแอบดูความในใจคนอื่นได้นะ</p>
+    </div>
+
+    <!-- === APP CONTENT (ซ่อนไว้ก่อน) === -->
+    <div id="appContent" class="hidden opacity-0 transition-opacity duration-500">
+      <!-- HEADER & USER PROFILE -->
+      <header class="text-center py-8 relative z-10">
+        <!-- ปุ่ม Logout มุมขวา (เพิ่ม z-50 เพื่อแก้ปัญหาคลิกไม่ได้) -->
+        <div class="absolute top-4 right-4 flex items-center gap-3 bg-gray-900/50 p-2 rounded-full backdrop-blur-sm border border-white/10 z-50">
+          <div class="text-right hidden md:block pl-2">
+            <p id="userDisplayName" class="text-white font-bold text-sm leading-tight"></p>
+            <p id="userEmailDisplay" class="text-gray-300 text-[10px] leading-tight"></p>
+          </div>
+          <img
+            id="userAvatar"
+            src=""
+            class="w-8 h-8 rounded-full border border-white shadow-sm bg-gray-600"
+          />
+          <button
+            onclick="logout()"
+            class="bg-red-500 hover:bg-red-600 text-white text-xs font-bold py-1.5 px-3 rounded-full shadow transition ml-1 cursor-pointer"
+          >
+            ออก
+          </button>
+        </div>
+
+        <h1
+          class="text-4xl md:text-6xl font-bold text-white drop-shadow-lg transform -rotate-2 relative z-0"
+        >
+          📢 กำแพงระบายความในใจ
+        </h1>
+        <p class="text-gray-300 mt-2 text-lg relative z-0">
+          โพสต์โดยใช้บัญชี Google (เห็นชื่อเห็นเมล์นะจ๊ะ) 🤭
+        </p>
+      </header>
+
+      <!-- INPUT ZONE -->
+      <div class="max-w-xl mx-auto px-4 mb-10 relative z-10">
+        <div
+          class="bg-white/10 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-white/20"
+        >
+          <textarea
+            id="messageInput"
+            rows="3"
+            class="w-full p-4 rounded-xl bg-white/90 focus:outline-none focus:ring-4 focus:ring-yellow-300 text-lg placeholder-gray-400 shadow-inner resize-none"
+            placeholder="พิมพ์อะไรก็ได้... บ่นเจ้านาย, บอกรักแฟน, หรือหิวข้าว?"
+          ></textarea>
+
+          <div class="flex justify-between items-center mt-4">
+            <div class="flex gap-2">
+              <button
+                onclick="selectColor('yellow')"
+                class="w-8 h-8 rounded-full bg-yellow-300 ring-2 ring-white hover:scale-110 transition color-btn ring-offset-2 ring-offset-gray-800"
+              ></button>
+              <button
+                onclick="selectColor('pink')"
+                class="w-8 h-8 rounded-full bg-pink-300 ring-transparent hover:ring-2 ring-white hover:scale-110 transition color-btn"
+              ></button>
+              <button
+                onclick="selectColor('blue')"
+                class="w-8 h-8 rounded-full bg-sky-300 ring-transparent hover:ring-2 ring-white hover:scale-110 transition color-btn"
+              ></button>
+              <button
+                onclick="selectColor('green')"
+                class="w-8 h-8 rounded-full bg-green-300 ring-transparent hover:ring-2 ring-white hover:scale-110 transition color-btn"
+              ></button>
+            </div>
+            <button
+              onclick="postConfession()"
+              class="bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-2 px-6 rounded-full shadow-lg transform active:scale-95 transition flex items-center gap-2"
+            >
+              แปะเลย! 📌
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WALL ZONE -->
+      <main class="max-w-7xl mx-auto px-4 pb-20 relative z-0">
+        <div
+          id="wallContainer"
+          class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 auto-rows-max"
+        >
+          <div
+            id="loading"
+            class="col-span-full text-center text-white py-10 animate-pulse"
+          >
+            กำลังโหลดความในใจ...
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+      import {
+        getFirestore,
+        collection,
+        addDoc,
+        onSnapshot,
+        query,
+        serverTimestamp,
+        deleteDoc,
+        updateDoc,
+        doc,
+      } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-firestore.js";
+      import {
+        getAuth,
+        GoogleAuthProvider,
+        signInWithPopup,
+        signOut,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+
+      // === 1. SETUP FIREBASE ===
+      const firebaseConfig = {
+        apiKey: "AIzaSyAhKMt2-wTBqCUCC4mzHjt8tWxCHBJXC5I",
+        authDomain: "student-data-app-1c677.firebaseapp.com",
+        projectId: "student-data-app-1c677",
+        storageBucket: "student-data-app-1c677.firebasestorage.app",
+        messagingSenderId: "575305259038",
+        appId: "1:575305259038:web:2ed2df837feb093185f60f",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+      const auth = getAuth(app);
+      const APP_ID =
+        typeof __app_id !== "undefined" ? __app_id : "default-app-id";
+
+      // === 2. AUTHENTICATION LOGIC ===
+      const loginScreen = document.getElementById("loginScreen");
+      const appContent = document.getElementById("appContent");
+      let currentUser = null; 
+
+      // ฟังก์ชันล็อกอิน
+      window.signInWithGoogle = async () => {
+        const provider = new GoogleAuthProvider();
+        try {
+          await signInWithPopup(auth, provider);
+        } catch (error) {
+          console.error("Login Error:", error);
+          alert("ล็อกอินไม่สำเร็จ: " + error.message);
+        }
+      };
+
+      // ฟังก์ชันล็อกเอาท์
+      window.logout = async () => {
+        if(confirm("ต้องการออกจากระบบใช่หรือไม่?")) {
+            try {
+              await signOut(auth);
+              window.location.reload(); 
+            } catch (error) {
+              console.error("Logout Error:", error);
+              alert("เกิดข้อผิดพลาดในการออกจากระบบ");
+            }
+        }
+      };
+
+      // ตรวจสอบสถานะ User (ทำงานตลอดเวลาเมื่อสถานะเปลี่ยน)
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          // --- มี User Login อยู่ ---
+          currentUser = user;
+          
+          // Animation เปลี่ยนหน้า
+          loginScreen.classList.add("hidden");
+          appContent.classList.remove("hidden");
+          setTimeout(() => {
+              appContent.classList.remove("opacity-0");
+          }, 50);
+          
+          // อัปเดตข้อมูลผู้ใช้บน Header
+          document.getElementById("userDisplayName").innerText = user.displayName;
+          document.getElementById("userEmailDisplay").innerText = user.email;
+          document.getElementById("userAvatar").src = user.photoURL || "https://ui-avatars.com/api/?name=" + user.displayName;
+
+          // เริ่มดึงข้อมูลจาก Database
+          startApp();
+        } else {
+          // --- ไม่มี User (Logout แล้ว) ---
+          currentUser = null;
+          
+          appContent.classList.add("hidden");
+          appContent.classList.add("opacity-0");
+          loginScreen.classList.remove("hidden");
+        }
+      });
+
+      // === 3. APP LOGIC ===
+      let selectedColor = "yellow";
+      const colorMap = {
+        yellow: "bg-yellow-200 text-yellow-900 rotate-1",
+        pink: "bg-pink-200 text-pink-900 -rotate-1",
+        blue: "bg-sky-200 text-sky-900 rotate-2",
+        green: "bg-green-200 text-green-900 -rotate-2",
+      };
+
+      function startApp() {
+        const wallCollection = collection(
+          db,
+          "artifacts",
+          APP_ID,
+          "public",
+          "data",
+          "confessions"
+        );
+
+        // --- READ & REALTIME LISTENERS ---
+        const q = query(wallCollection);
+        const wallContainer = document.getElementById("wallContainer");
+        const loading = document.getElementById("loading");
+        let notesData = [];
+
+        onSnapshot(q, (snapshot) => {
+            loading.style.display = "none";
+            notesData = []; 
+
+            snapshot.forEach((doc) => {
+              notesData.push({ id: doc.id, ...doc.data() });
+            });
+
+            // Sort ใหม่ไปเก่า (Client-side sorting)
+            notesData.sort((a, b) => {
+              const t1 = a.timestamp ? a.timestamp.seconds : 0;
+              const t2 = b.timestamp ? b.timestamp.seconds : 0;
+              return t2 - t1;
+            });
+
+            renderNotes(notesData);
+          },
+          (error) => {
+            console.error("Snapshot error:", error);
+            // กรณีไม่มีสิทธิ์หรือ Path ผิด
+          }
+        );
+
+        function renderNotes(notes) {
+          wallContainer.innerHTML = "";
+          
+          if (notes.length === 0) {
+              wallContainer.innerHTML = `<div class="col-span-full text-center text-white/50 py-10 text-xl font-light">ยังไม่มีใครระบายอะไรเลย... เริ่มคนแรกสิ!</div>`;
+              return;
+          }
+
+          notes.forEach((data) => {
+            createNoteElement(data);
+          });
+        }
+
+        function createNoteElement(data) {
+          const noteId = data.id;
+          const date = data.timestamp ? data.timestamp.toDate() : new Date();
+          const div = document.createElement("div");
+          div.id = `note-${noteId}`;
+          const colorClass = colorMap[data.color] || colorMap["yellow"];
+
+          div.className = `group p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300 cursor-default note-enter relative min-h-[180px] flex flex-col justify-between ${colorClass}`;
+
+          const rot = data.rotation || Math.random() * 6 - 3;
+          div.style.setProperty("--rotation", `${rot}deg`);
+
+          // ตรวจสอบว่าใครเป็นเจ้าของโพสต์
+          const isOwner = data.uid === currentUser.uid;
+          
+          // ปุ่มแก้ไข/ลบ จะโชว์เฉพาะเจ้าของเท่านั้น
+          const buttonsHtml = isOwner ? `
+            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <button onclick="window.editConfession('${noteId}')" class="bg-white/50 hover:bg-white p-1 rounded-full text-sm w-8 h-8 flex items-center justify-center shadow-sm" title="แก้ไข">✏️</button>
+                <button onclick="window.deleteConfession('${noteId}')" class="bg-white/50 hover:bg-red-500 hover:text-white p-1 rounded-full text-sm w-8 h-8 flex items-center justify-center shadow-sm" title="ลบ">🗑️</button>
+            </div>
+          ` : `<div></div>`;
+
+          const authorEmail = data.authorEmail || "Anonymous";
+          const authorName = data.authorName || "นิรนาม";
+
+          div.innerHTML = `
+                <!-- หมุด -->
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-4 h-4 rounded-full bg-red-500 shadow-sm z-10 border border-red-700"></div>
+                <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white/50 rounded-full z-20"></div>
+
+                <!-- ข้อความ -->
+                <div class="mb-4">
+                     <p class="note-text text-xl font-medium leading-relaxed break-words">"${data.text}"</p>
+                </div>
+                
+                <!-- Footer ของโน้ต -->
+                <div class="mt-auto pt-2 border-t border-black/10">
+                    <div class="flex items-center gap-2 mb-2 opacity-80">
+                        <div class="w-6 h-6 rounded-full bg-black/10 flex items-center justify-center text-xs overflow-hidden font-bold text-black/50">
+                             ${authorName.charAt(0)}
+                        </div>
+                        <div class="flex flex-col leading-none">
+                            <span class="text-xs font-bold truncate max-w-[150px]">${authorName}</span>
+                            <span class="text-[10px] opacity-70 truncate max-w-[150px]">${authorEmail}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center h-8">
+                        ${buttonsHtml}
+                        <span class="text-xs font-bold opacity-60">
+                            🕒 ${timeAgo(date)}
+                        </span>
+                    </div>
+                </div>
+            `;
+          wallContainer.appendChild(div);
+        }
+
+        // --- CREATE ---
+        window.postConfession = async () => {
+          if (!currentUser) return alert("กรุณาล็อกอินก่อนครับ");
+
+          const input = document.getElementById("messageInput");
+          const text = input.value.trim();
+          if (!text) {
+            alert("พิมพ์อะไรหน่อยสิ!");
+            return;
+          }
+
+          try {
+            await addDoc(wallCollection, {
+              text: text,
+              color: selectedColor,
+              timestamp: serverTimestamp(),
+              rotation: Math.random() * 6 - 3,
+              uid: currentUser.uid,
+              authorEmail: currentUser.email,
+              authorName: currentUser.displayName
+            });
+            input.value = "";
+          } catch (error) {
+            console.error(error);
+            alert("ส่งไม่ไปแฮะ: " + error.message);
+          }
+        };
+
+        // --- UPDATE ---
+        window.editConfession = async (id) => {
+            const currentText = document.querySelector(`#note-${id} .note-text`).innerText.replace(/^"|"$/g, "");
+            const newText = prompt("แก้ไขข้อความ:", currentText);
+
+            if (newText !== null && newText.trim() !== "") {
+                try {
+                    const noteRef = doc(db, "artifacts", APP_ID, "public", "data", "confessions", id);
+                    await updateDoc(noteRef, { text: newText });
+                } catch (error) {
+                    console.error("Error updating: ", error);
+                    alert("แก้ไขไม่ได้ (คุณอาจไม่ใช่เจ้าของโพสต์)");
+                }
+            }
+        };
+
+        // --- DELETE ---
+        window.deleteConfession = async (id) => {
+            if (confirm("จะฉีกโน้ตนี้ทิ้งจริงๆ หรอ?")) {
+                try {
+                    const noteRef = doc(db, "artifacts", APP_ID, "public", "data", "confessions", id);
+                    await deleteDoc(noteRef);
+                } catch (error) {
+                    console.error("Error deleting: ", error);
+                    alert("ลบไม่ได้ (คุณอาจไม่ใช่เจ้าของโพสต์)");
+                }
+            }
+        };
+      }
+
+      // --- UTILS ---
+      window.selectColor = (color) => {
+        selectedColor = color;
+        document.querySelectorAll(".color-btn").forEach((btn) => {
+          btn.classList.remove("ring-2", "ring-white", "ring-offset-2", "ring-offset-gray-800");
+          btn.classList.add("ring-transparent");
+        });
+        event.target.classList.remove("ring-transparent");
+        event.target.classList.add("ring-2", "ring-white", "ring-offset-2", "ring-offset-gray-800");
+      };
+
+      function timeAgo(date) {
+        const seconds = Math.floor((new Date() - date) / 1000);
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " ปีที่แล้ว";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " เดือนที่แล้ว";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " วันที่แล้ว";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " ชม.ที่แล้ว";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " นาทีก่อน";
+        return "เมื่อกี้";
+      }
+    </script>
+  </body>
+</html>
