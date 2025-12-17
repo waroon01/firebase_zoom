@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <!-- ... Head เหมือนเดิม ... -->
+</head>
+<body>
+    <!-- ... UI กำแพงทั้งหมดของคุณ ... -->
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+        // ... import Firestore ...
+
+        // ... ใส่ Firebase Config ตรงนี้ (ต้องเหมือนไฟล์แรก) ...
+        const firebaseConfig = { ... }; 
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // ด่านตรวจคนเข้าเมือง
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // ผ่าน! รันโค้ดดึงข้อมูล (startApp) ได้เลย
+                console.log("Welcome", user.displayName);
+                startApp(user); // เรียกฟังก์ชันหลักของคุณ
+            } else {
+                // ไม่ผ่าน! กลับไปหน้าแรกเดี๋ยวนี้
+                alert("กรุณาล็อกอินก่อน!");
+                window.location.href = "index.html";
+            }
+        });
+
+        window.logout = async () => {
+            await signOut(auth);
+            window.location.href = "index.html"; // ออกแล้วกลับหน้าแรก
+        }
+        
+        // ... ฟังก์ชัน startApp(), postConfession() ฯลฯ ...
+    </script>
+</body>
+</html>
