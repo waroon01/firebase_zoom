@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Satisfaction Survey 🚀</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;500;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #0f172a;
+            color: white;
+        }
+
+        /* Glassmorphism Effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Emoji Animation */
+        .emoji-btn {
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .emoji-btn:hover {
+            transform: scale(1.2) translateY(-5px);
+        }
+
+        .emoji-btn.selected {
+            transform: scale(1.3);
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+
+        /* Bar Animation */
+        .bar-fill {
+            transition: width 1s ease-in-out;
+        }
+
+        /* Floating Particles Background */
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            50% { opacity: 0.5; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden">
+
+    <!-- Background Animation -->
+    <div id="particles"></div>
+
+    <div class="container mx-auto px-4 py-8 max-w-4xl grid md:grid-cols-2 gap-8 relative z-10">
+
+        <!-- SECTION 1: VOTING FORM -->
+        <div class="glass rounded-3xl p-8 shadow-2xl flex flex-col justify-center transform transition duration-500 hover:scale-[1.01]">
+            <div class="text-center mb-8">
+                <span class="bg-indigo-500 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block shadow-lg shadow-indigo-500/50">Feedback</span>
+                <h1 class="text-3xl md:text-4xl font-bold mt-2 bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">
+                    รู้สึกยังไงกับงานวันนี้?
+                </h1>
+                <p class="text-gray-400 mt-2 text-sm">จิ้มที่หน้า Emoji เพื่อให้คะแนนเราหน่อยนะ</p>
+            </div>
+
+            <!-- Emoji Selector -->
+            <div class="flex justify-between items-center mb-8 px-2">
+                <button onclick="selectRating(1)" class="emoji-btn grayscale hover:grayscale-0 opacity-50 hover:opacity-100 text-4xl md:text-5xl" id="rate-1" title="แย่มาก">🤬</button>
+                <button onclick="selectRating(2)" class="emoji-btn grayscale hover:grayscale-0 opacity-50 hover:opacity-100 text-4xl md:text-5xl" id="rate-2" title="ไม่โอเค">☹️</button>
+                <button onclick="selectRating(3)" class="emoji-btn grayscale hover:grayscale-0 opacity-50 hover:opacity-100 text-4xl md:text-5xl" id="rate-3" title="เฉยๆ">😐</button>
+                <button onclick="selectRating(4)" class="emoji-btn grayscale hover:grayscale-0 opacity-50 hover:opacity-100 text-4xl md:text-5xl" id="rate-4" title="ดีนะ">🙂</button>
+                <button onclick="selectRating(5)" class="emoji-btn grayscale hover:grayscale-0 opacity-50 hover:opacity-100 text-4xl md:text-5xl" id="rate-5" title="สุดยอด!">🤩</button>
+            </div>
+
+            <!-- Comment Input -->
+            <div class="mb-6 relative group">
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-xl opacity-0 group-focus-within:opacity-75 transition duration-500 blur"></div>
+                <textarea id="commentInput" rows="3" 
+                    class="relative w-full bg-slate-900/90 text-white rounded-xl p-4 focus:outline-none placeholder-gray-500 resize-none"
+                    placeholder="อยากบอกอะไรเพิ่มเติมมั้ย? (ไม่บังคับ)"></textarea>
+            </div>
+
+            <button onclick="submitSurvey()" id="submitBtn"
+                class="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transform transition active:scale-95 flex justify-center items-center gap-2 group">
+                <span>ส่งผลประเมิน</span>
+                <i class="fa-solid fa-paper-plane group-hover:translate-x-1 transition"></i>
+            </button>
+        </div>
+
+        <!-- SECTION 2: LIVE DASHBOARD -->
+        <div class="glass rounded-3xl p-8 shadow-2xl flex flex-col relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-20">
+                <i class="fa-solid fa-chart-pie text-9xl"></i>
+            </div>
+
+            <div class="flex justify-between items-end mb-6 relative z-10">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">ผลแบบ Realtime 📊</h2>
+                    <p class="text-gray-400 text-xs mt-1">อัปเดตอัตโนมัติ</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-4xl font-bold text-yellow-400" id="avgScore">0.0</div>
+                    <div class="text-xs text-gray-400">คะแนนเฉลี่ย <span id="totalVotes">(0 โหวต)</span></div>
+                </div>
+            </div>
+
+            <!-- Progress Bars -->
+            <div class="space-y-4 mb-8 relative z-10 flex-1">
+                <!-- 5 Stars -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xl w-8">🤩</span>
+                    <div class="flex-1 h-3 bg-gray-700 rounded-full overflow-hidden">
+                        <div id="bar-5" class="bar-fill h-full bg-gradient-to-r from-green-400 to-emerald-600 w-0 relative"></div>
+                    </div>
+                    <span id="count-5" class="text-xs w-6 text-right font-mono text-gray-400">0</span>
+                </div>
+                <!-- 4 Stars -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xl w-8">🙂</span>
+                    <div class="flex-1 h-3 bg-gray-700 rounded-full overflow-hidden">
+                        <div id="bar-4" class="bar-fill h-full bg-gradient-to-r from-blue-400 to-indigo-600 w-0"></div>
+                    </div>
+                    <span id="count-4" class="text-xs w-6 text-right font-mono text-gray-400">0</span>
+                </div>
+                <!-- 3 Stars -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xl w-8">😐</span>
+                    <div class="flex-1 h-3 bg-gray-700 rounded-full overflow-hidden">
+                        <div id="bar-3" class="bar-fill h-full bg-gradient-to-r from-yellow-400 to-orange-500 w-0"></div>
+                    </div>
+                    <span id="count-3" class="text-xs w-6 text-right font-mono text-gray-400">0</span>
+                </div>
+                <!-- 2 Stars -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xl w-8">☹️</span>
+                    <div class="flex-1 h-3 bg-gray-700 rounded-full overflow-hidden">
+                        <div id="bar-2" class="bar-fill h-full bg-gradient-to-r from-orange-400 to-red-500 w-0"></div>
+                    </div>
+                    <span id="count-2" class="text-xs w-6 text-right font-mono text-gray-400">0</span>
+                </div>
+                <!-- 1 Star -->
+                <div class="flex items-center gap-3">
+                    <span class="text-xl w-8">🤬</span>
+                    <div class="flex-1 h-3 bg-gray-700 rounded-full overflow-hidden">
+                        <div id="bar-1" class="bar-fill h-full bg-gradient-to-r from-red-600 to-red-900 w-0"></div>
+                    </div>
+                    <span id="count-1" class="text-xs w-6 text-right font-mono text-gray-400">0</span>
+                </div>
+            </div>
+
+            <!-- Recent Comments -->
+            <div class="mt-auto">
+                <h3 class="text-xs font-bold text-gray-500 uppercase mb-3">💬 ความเห็นล่าสุด</h3>
+                <div id="recentComments" class="space-y-2 max-h-[150px] overflow-hidden relative">
+                    <!-- JS will inject comments here -->
+                    <div class="text-center text-gray-600 text-sm py-4">ยังไม่มีความเห็น</div>
+                </div>
+                <!-- Fade effect for comments list -->
+                <div class="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-[#141c30] to-transparent pointer-events-none"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- FIREBASE CONFIG (ใช้ตัวเดิม) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAhKMt2-wTBqCUCC4mzHjt8tWxCHBJXC5I",
+            authDomain: "student-data-app-1c677.firebaseapp.com",
+            projectId: "student-data-app-1c677",
+            storageBucket: "student-data-app-1c677.firebasestorage.app",
+            messagingSenderId: "575305259038",
+            appId: "1:575305259038:web:2ed2df837feb093185f60f"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const surveyCollection = collection(db, "satisfaction_survey"); // แยก collection ใหม่ไม่ให้ปนกับอันเดิม
+
+        // --- STATE ---
+        let selectedScore = 0;
+
+        // --- UI LOGIC ---
+        window.selectRating = (score) => {
+            selectedScore = score;
+            
+            // Update UI
+            document.querySelectorAll('.emoji-btn').forEach((btn, index) => {
+                const btnScore = index + 1;
+                if (btnScore === score) {
+                    btn.classList.remove('grayscale', 'opacity-50');
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.add('grayscale', 'opacity-50');
+                    btn.classList.remove('selected');
+                }
+            });
+        }
+
+        window.submitSurvey = async () => {
+            const comment = document.getElementById('commentInput').value.trim();
+            const btn = document.getElementById('submitBtn');
+
+            if (selectedScore === 0) {
+                alert("กรุณาเลือกความรู้สึกก่อนกดส่งนะครับ 🙏");
+                return;
+            }
+
+            // Loading state
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังส่ง...';
+            btn.disabled = true;
+
+            try {
+                await addDoc(surveyCollection, {
+                    score: selectedScore,
+                    comment: comment,
+                    timestamp: serverTimestamp()
+                });
+
+                // Success State & Reset
+                alert("ขอบคุณสำหรับ feedback ครับ! 🎉");
+                selectedScore = 0;
+                document.getElementById('commentInput').value = '';
+                document.querySelectorAll('.emoji-btn').forEach(b => {
+                    b.classList.add('grayscale', 'opacity-50');
+                    b.classList.remove('selected');
+                });
+
+            } catch (error) {
+                console.error(error);
+                alert("เกิดข้อผิดพลาดในการส่งข้อมูล");
+            } finally {
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
+            }
+        }
+
+        // --- REALTIME DASHBOARD LOGIC ---
+        // ดึงข้อมูลทั้งหมดมาคำนวณกราฟ (สำหรับ Survey ปกติข้อมูลไม่เยอะมากใช้แบบนี้ได้ ถ้าเยอะต้องแก้เป็น Aggregate)
+        const qStats = query(surveyCollection, orderBy("timestamp", "desc"));
+
+        onSnapshot(qStats, (snapshot) => {
+            const docs = snapshot.docs.map(doc => doc.data());
+            const total = docs.length;
+
+            if (total === 0) return;
+
+            // 1. Calculate Stats
+            const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+            let sumScore = 0;
+
+            docs.forEach(d => {
+                if (counts[d.score] !== undefined) counts[d.score]++;
+                sumScore += d.score;
+            });
+
+            const avg = (sumScore / total).toFixed(1);
+
+            // 2. Update Header Stats
+            animateValue("avgScore", parseFloat(document.getElementById("avgScore").innerText), parseFloat(avg), 1000);
+            document.getElementById("totalVotes").innerText = `(${total} โหวต)`;
+
+            // 3. Update Bars
+            for (let i = 1; i <= 5; i++) {
+                const count = counts[i];
+                const percentage = (count / total) * 100;
+                
+                document.getElementById(`bar-${i}`).style.width = `${percentage}%`;
+                document.getElementById(`count-${i}`).innerText = count;
+            }
+
+            // 4. Update Recent Comments (show top 5 with text)
+            const recentCommentsDiv = document.getElementById("recentComments");
+            const commentsWithText = docs.filter(d => d.comment && d.comment.length > 0).slice(0, 5);
+            
+            if (commentsWithText.length > 0) {
+                recentCommentsDiv.innerHTML = commentsWithText.map(d => `
+                    <div class="bg-white/5 p-2 rounded-lg border-l-2 border-indigo-500 text-sm animate-fade-in">
+                        <div class="flex justify-between items-start">
+                            <span class="text-white/90">"${d.comment}"</span>
+                            <span class="text-xs ml-2 opacity-50 whitespace-nowrap">${getEmoji(d.score)}</span>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                recentCommentsDiv.innerHTML = '<div class="text-center text-gray-600 text-sm py-4">ยังไม่มีความเห็น</div>';
+            }
+        });
+
+        // Helper: Number Animation
+        function animateValue(id, start, end, duration) {
+            if (start === end) return;
+            const obj = document.getElementById(id);
+            const range = end - start;
+            let current = start;
+            const increment = end > start ? 0.1 : -0.1;
+            const stepTime = Math.abs(Math.floor(duration / (range / increment)));
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                obj.innerHTML = current.toFixed(1);
+            }, stepTime);
+        }
+
+        // Helper: Get Emoji
+        function getEmoji(score) {
+            const map = {1:'🤬', 2:'☹️', 3:'😐', 4:'🙂', 5:'🤩'};
+            return map[score] || '❓';
+        }
+
+        // --- BACKGROUND PARTICLES ---
+        function createParticles() {
+            const container = document.getElementById('particles');
+            const particleCount = 20;
+
+            for (let i = 0; i < particleCount; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                
+                // Random Size
+                const size = Math.random() * 50 + 10;
+                p.style.width = `${size}px`;
+                p.style.height = `${size}px`;
+                
+                // Random Position
+                p.style.left = `${Math.random() * 100}vw`;
+                p.style.top = `${Math.random() * 100 + 100}vh`; // Start below screen
+                
+                // Random Animation Duration & Delay
+                p.style.animationDuration = `${Math.random() * 20 + 10}s`;
+                p.style.animationDelay = `${Math.random() * 5}s`;
+                
+                container.appendChild(p);
+            }
+        }
+        createParticles();
+
+    </script>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</body>
+
+</html>
